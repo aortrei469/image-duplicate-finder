@@ -1,0 +1,194 @@
+.TH IMGHASH 1 "Marzo 2026"
+.SH NAME
+imghash \- Hash perceptual de imágenes para encontrar duplicados o similares
+.SH SYNOPSIS
+.B imghash
+[\fB\-\-index\fR \fICARPETA\fR]
+[\fB\-\-build\-hash\-index\fR]
+[\fB\-\-find\-dups\fR]
+[\fB\-\-search\fR \fIIMAGEN\fR]
+[\fB\-\-indice\fR \fIINDICE.JSON\fR]
+[\fB\-o\fR|\fB\-\-output\fR \fISALIDA.JSON\fR]
+[\fB\-\-threshold\fR \fIN\fR]
+[\fB\-\-hash\fR \fITIPO\fR]
+[\fB\-\-update\fR]
+[\fB\-\-tamano\fR \fIN\fR]
+.SH DESCRIPCIÓN
+\fBimghash\fR es una herramienta para calcular hashes perceptuales de imágenes
+y encontrar duplicados o imágenes similares, incluso cuando han sido
+comprimidas (ej: enviadas por WhatsApp) o redimensionadas.
+.PP
+El programa funciona en tres fases:
+.IP 1. 3
+\fBIndexación\fR: Calcula hashes de todas las imágenes en una carpeta y
+los guarda en un archivo JSON.
+.IP 2. 3
+\fBÍndice de hashes\fR: Genera un archivo separado con solo los hashes
+ordenados (más rápido para búsquedas grandes).
+.IP 3. 3
+\fBBúsqueda\fR: Encuentra duplicados o busca imágenes similares.
+.SH OPCIONES
+.TP
+\fB\-\-index\fR \fICARPETA\fR
+Carpeta que contiene las imágenes a indexar. Se procesan todos los archivos
+con extensión: jpg, jpeg, png, gif, bmp, webp, tiff.
+.TP
+\fB\-\-build\-hash\-index\fR
+Genera un archivo \fIindice_hash.json\fR separado con solo los hashes
+ordenados. Esto acelera significativamente las búsquedas en grandes
+colecciones (decenas de miles de imágenes).
+.TP
+\fB\-\-find\-dups\fR
+Encuentra grupos de imágenes duplicadas o similares dentro del índice.
+Usa el índice de hashes si está disponible para mayor velocidad.
+.TP
+\fB\-\-update\fR
+Reindexa todo desde cero, ignorando cualquier índice existente.
+.TP
+\fB\-\-search\fR \fIIMAGEN\fR
+Imagen objetivo para buscar imágenes similares en el índice.
+.TP
+\fB\-\-indice\fR \fIINDICE.JSON\fR
+Archivo de índice JSON generado previamente con \fB\-\-index\fR.
+.TP
+\fB\-o\fR, \fB\-\-output\fR \fISALIDA.JSON\fR
+Archivo de salida JSON. Si no se especifica, usa \fBresultado.json\fR.
+.TP
+\fB\-\-threshold\fR \fIN\fR
+Umbral mínimo de similitud (0\-100). Para \fB\-\-find\-dups\fR el valor
+por defecto es 85.
+.TP
+\fB\-\-hash\fR \fITIPO\fR
+Tipo de hash perceptual a usar para la comparación:
+.RS
+.IP \fBphash\fR 3
+Perceptual Hash (default). Más robusto a compresiones.
+.IP \fBahash\fR 3
+Average Hash. Basado en promedio de píxeles.
+.IP \fBdhash\fR 3
+Difference Hash. Basado en diferencias entre píxeles.
+.IP \fBwhash\fR 3
+Wavelet Hash. Usa transformada wavelet.
+.RE
+.TP
+\fB\-\-tamano\fR \fIN\fR
+Tamaño para procesamiento binario (default: 32).
+.SH EJEMPLOS
+.TP
+Indexar carpeta con índice de hashes:
+.B
+.RS
+\fBimghash \-\-index /home/usuario/fotos \-o indice.json \-\-build\-hash\-index\fR
+.RE
+.TP
+Añadir más imágenes (indexación incremental):
+.B
+.RS
+\fBimghash \-\-index /home/usuario/mas_fotos \-\-indice indice.json \-o indice.json\fR
+.RE
+.TP
+Encontrar duplicados (85% por defecto):
+.B
+.RS
+\fBimghash \-\-find\-dups indice.json \-o duplicados.json\fR
+.RE
+.TP
+Encontrar duplicados con threshold del 90%:
+.B
+.RS
+\fBimghash \-\-find\-dups indice.json \-\-threshold 90 \-o dup90.json\fR
+.RE
+.TP
+Buscar imagen específica:
+.B
+.RS
+\fBimghash \-\-search objetivo.jpg \-\-indice indice.json \-o resultados.json\fR
+.RE
+.TP
+Buscar con threshold del 80%:
+.B
+.RS
+\fBimghash \-\-search objetivo.jpg \-\-indice indice.json \-\-threshold 80 \-o resultados.json\fR
+.RE
+.SH FORMATO DEL ÍNDICE
+El archivo JSON de índice (\fBindice.json\fR) contiene:
+.RS
+.IP \(bu 2
+\fBfecha_generacion\fR: Fecha de creación del índice
+.IP \(bu 2
+\fBcarpeta_origen\fR: Ruta de la carpeta indexada
+.IP \(bu 2
+\fBimagenes\fR: Array de imágenes con:
+.RS
+.IP \(bu 2
+\fBruta\fR: Ruta absoluta del archivo
+.IP \(bu 2
+\fBnombre\fR: Nombre del archivo
+.IP \(bu 2
+\fBhashes\fR: Objeto con phash, ahash, dhash, whash
+.IP \(bu 2
+\fBhash_binario\fR: Imagen procesada en base64 (blanco/negro 32x32)
+.RE
+.RE
+.PP
+El archivo de índice de hashes (\fBindice_hash.json\fR) contiene:
+.RS
+.IP \(bu 2
+\fBtipo_hash\fR: Tipo de hash usado
+.IP \(bu 2
+\fBhashes\fR: Array de {\fBhash\fR, \fBindice\fR} ordenado lexicográficamente
+.RE
+.SH FORMATO DE DUPLICADOS
+El archivo JSON de duplicados contiene:
+.RS
+.IP \(bu 2
+\fBtip\fR: Tipo de hash utilizado
+.IP \(bu 2
+\fBthreshold\fR: Umbral de similitud usado
+.IP \(bu 2
+\fBgrupos_similares\fR: Array de grupos ordenados por tamaño:
+.RS
+.IP \(bu 2
+\fBid_grupo\fR: Identificador del grupo
+.IP \(bu 2
+\fBtamano\fR: Número de imágenes en el grupo
+.IP \(bu 2
+\fBimagenes\fR: Array con ruta, nombre, distancia_hamming, similitud_pct
+.RE
+.IP \(bu 2
+\fBestadisticas\fR: total_imagenes, total_grupos, imagenes_en_grupos
+.RE
+.SH RENDIMIENTO
+Para 10.000 imágenes:
+.IP \(bu 2
+Indexar: ~2\-5 minutos
+.IP \(bu 2
+Generar índice de hashes: ~1 segundo
+.IP \(bu 2
+Encontrar duplicados (con hash index): ~2 segundos
+.IP \(bu 2
+Encontrar duplicados (sin hash index): ~30 segundos
+.SH ALGORITMO
+El hash perceptual (phash) funciona redimensionando la imagen a 32x32,
+convirtiéndola a escala de grises, calculando una transformada DCT y
+comparando con la media. Esto produce un hash que se mantiene similar
+incluso cuando la imagen es comprimida, redimensionada o ligeramente
+modificada.
+.PP
+La búsqueda de duplicados ordena los hashes lexicográficamente y compara
+solo elementos adyacentes, reduciendo la complejidad de O(n²) a O(n log n).
+.PP
+La distancia Hamming cuenta los bits diferentes entre dos hashes.
+.IP \(bu 2
+0 bits: imágenes idénticas
+.IP \(bu 2
+1\-4 bits: muy similares (compresión diferente)
+.IP \(bu 2
+5\-10 bits: similares (ediciones menores)
+.IP \(bu 2
+>10 bits: diferentes
+.SH AUTOR
+Script creado para búsqueda de imágenes duplicadas/similares.
+.SH VER TAMBIÉN
+.BR imagehash (3),
+.BR pillow (3)
