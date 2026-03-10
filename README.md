@@ -142,13 +142,13 @@ El script detecta qué imágenes ya están indexadas y solo procesa las nuevas.
 
 ```bash
 # Con threshold por defecto (85%)
-python3 imghash.py --find-dups --index indice.json -o duplicados.json
+python3 imghash.py --find-dups --i indice.json -o duplicados.json
 
 # Con threshold más alto (más estricto)
-python3 imghash.py --find-dups --index indice.json --threshold 90 -o dup90.json
+python3 imghash.py --find-dups --i indice.json --threshold 90 -o dup90.json
 
 # Con threshold bajo (más permisivo)
-python3 imghash.py --find-dups --index indice.json --threshold 70 -o dup70.json
+python3 imghash.py --find-dups --i indice.json --threshold 70 -o dup70.json
 ```
 
 ### 4. Buscar una imagen específica
