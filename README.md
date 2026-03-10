@@ -90,8 +90,8 @@ python3 imghash.py --index /fotos -o indice.json --build-hash-index
 python3 imghash.py --index /mas_fotos --indice indice.json -o indice.json
 
 # 3. Encontrar duplicados
-python3 imghash.py --find-dups indice.json -o duplicados.json
-python3 imghash.py --find-dups indice.json --threshold 90 -o dup90.json
+python3 imghash.py --find-dups --i indice.json -o duplicados.json
+python3 imghash.py --find-dups --i indice.json --threshold 90 -o dup90.json
 ```
 
 ### Comandos disponibles
